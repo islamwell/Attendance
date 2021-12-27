@@ -1,0 +1,186 @@
+{
+    "mainTitle0": "Attendance",
+    "@mainTitle0": {
+        "description": "First word of the title."
+    },
+    "mainTitle1": "Tracker",
+    "@mainTitle1": {
+        "description": "Second word of the title."
+    },
+    "takeAttendance": "Take Attendance",
+    "@takeAttendance": {
+        "description": "Home Screen First Container"
+    },
+    "myCourses": "My Courses",
+    "@myCourses": {
+        "description": "Home Screen Second Container"
+    },
+    "administration": "Administration",
+    "@administration": {
+        "description": "Home Screen Third Container"
+    },
+    "chooseCourse": "Choose Course",
+    "@chooseCourse": {
+        "description": "Choose Course"
+    },
+    "chooseDate": "Choose Date",
+    "@chooseDate": {
+        "description": "Choose Date"
+    },
+    "done": "Done",
+    "@done": {
+        "description": "done"
+    },
+    "onlyone": "You have only 1 course assigned!",
+    "@onlyone": {
+        "description": "only one"
+    },
+    "noCourse": "You have no courses!",
+    "@noCourse": {
+        "description": "no course"
+    },
+    "excused": "Excused",
+    "@excused": {
+        "description": "excused"
+    },
+    "absent": "Absent",
+    "@absent": {
+        "description": "absent"
+    },
+    "present": "Present",
+    "@present": {
+        "description": "present"
+    },
+    "editStudent": "Edit Student",
+    "@editStudent": {
+        "description": "edit"
+    },
+    "addStudent": "Add Student",
+    "@addStudent": {
+        "description": "add"
+    },
+    "addCourse": "Add Course",
+    "@addCourse": {
+        "description": "add course"
+    },
+    "add": "Add",
+    "@add": {
+        "description": "add single"
+    },
+    "student": "Student",
+    "@student": {
+        "description": "student single"
+    },
+    "fullname": "Fullname",
+    "@fullname": {
+        "description": "fullname"
+    },
+    "address": "Address",
+    "@address": {
+        "description": "address"
+    },
+    "father": "Father's Name",
+    "@father": {
+        "description": "father"
+    },
+    "mother": "Mother's Name",
+    "@mother": {
+        "description": "mother"
+    },
+    "phone": "Phone Number",
+    "@phone": {
+        "description": "phone"
+    },
+    "createdStudent": "Student Created!",
+    "@createdStudent": {
+        "description": "created Student"
+    },
+    "allCourses": "Student has enrolled in all existing courses!",
+    "@allCourses": {
+        "description": "has enrolled"
+    },
+    "or": "OR",
+    "@or": {
+        "description": "OR"
+    },
+    "deleteCourse": "Delete Course",
+    "@deleteCourse": {
+        "description": "delete course"
+    },
+    "noCoursestu": "Student has no courses!",
+    "@noCoursestu": {
+        "description": "Student has no courses!"
+    },
+    "edit": "Edit",
+    "@edit": {
+        "description": "edd"
+    },
+    "chooseStudent": "Choose Student",
+    "@chooseStudent": {
+        "description": "chooseStudent"
+    },
+    "kurs": "Courses",
+    "@kurs": {
+        "description": "course sinngg"
+    },
+    "chooseInstructor": "Choose Instructor",
+    "@chooseInstructor": {
+        "description": "chooseInstructor"
+    },
+    "courseCreated": "Course Created!",
+    "@courseCreated": {
+        "description": "courseCreated"
+    },
+    "mine": "My",
+    "@mine": {
+        "description": "mine"
+    },
+    "attendanceReport": "Attendance Report",
+    "@attendanceReport": {
+        "description": "attendanceReport"
+    },
+    "details": "View Details",
+    "@details": {
+        "description": "details"
+    },
+    "noRecord": "Student has no record!",
+    "@noRecord": {
+        "description": "noRecord"
+    },
+    "dato": "Date",
+    "@dato": {
+        "description": "dato"
+    },
+    "password": "Password",
+    "@password": {
+        "description": "password"
+    },
+    "login": "Login",
+    "@login": {
+        "description": "login"
+    },
+    "personal": "Personal",
+    "@personal": {
+        "description": "personal"
+    },
+    "info": "Information",
+    "@info": {
+        "description": "info"
+    },
+    "submit": "Submit",
+    "@submit": {
+        "description": "submit"
+    },
+    "list": "List Students",
+    "@list": {
+        "description": "list"
+    },
+    "firstpage": "Welcome, it seems this is your first time login, don't worry, you can login to the app after entering the necessary information.",
+    "@firstpage": {
+        "description": "firstpage"
+    },
+    "courseName": "Course Name",
+    "@courseName": {
+        "description": "name of the course"
+    }
+}

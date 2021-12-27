@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1031486906364",
+    "project_id": "attendance-tracker-37315",
+    "storage_bucket": "attendance-tracker-37315.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031486906364:android:6e5c39ba677e706b271c79",
+        "android_client_info": {
+          "package_name": "com.example.attendance_tracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1031486906364-opvi5sh89alid3o14t73m8u6egd2601g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQ-xL6Oc47bh5DovRaJzB15vje4Kthzu8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1031486906364-opvi5sh89alid3o14t73m8u6egd2601g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1031486906364-0mo4omgav2ctrvt6psfnl9opn0jck1rd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.attendanceTracker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
