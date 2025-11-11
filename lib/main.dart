@@ -31,17 +31,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Attendance Tracker',
-        theme: ThemeData(
-          scaffoldBackgroundColor: kBackgroundColor,
-          textTheme: Theme.of(context).textTheme.apply(bodyColor: kTextColor3),
-          iconTheme: const IconThemeData(
-            color: kTextColor3,
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: kBackgroundColor,
-          ),
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
+        theme: getMaterial3Theme(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         initialRoute: '/',

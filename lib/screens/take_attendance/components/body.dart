@@ -45,77 +45,107 @@ class _BodyState extends State<Body> {
                             fontSize: 20),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        showCupertinoModalPopup(
-                          context: context,
-                          builder: (context) => CupertinoActionSheet(
-                            actions: [
-                              SizedBox(
-                                height: 200,
-                                child: CupertinoDatePicker(
-                                  minimumYear: 2020,
-                                  maximumYear: DateTime.now().year + 5,
-                                  initialDateTime: dateTime,
-                                  mode: CupertinoDatePickerMode.date,
-                                  onDateTimeChanged: (dateTime) {
-                                    if (mounted) {
-                                      setState(() {
-                                        this.dateTime = dateTime;
-                                      });
-                                    }
+                    Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: kDefaultPadding),
+                      child: Card(
+                        elevation: 2,
+                        child: InkWell(
+                          onTap: () {
+                            showCupertinoModalPopup(
+                              context: context,
+                              builder: (context) => CupertinoActionSheet(
+                                actions: [
+                                  SizedBox(
+                                    height: 200,
+                                    child: CupertinoDatePicker(
+                                      minimumYear: 2020,
+                                      maximumYear: DateTime.now().year + 5,
+                                      initialDateTime: dateTime,
+                                      mode: CupertinoDatePickerMode.date,
+                                      onDateTimeChanged: (dateTime) {
+                                        if (mounted) {
+                                          setState(() {
+                                            this.dateTime = dateTime;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  )
+                                ],
+                                cancelButton: CupertinoActionSheetAction(
+                                  child: Text(AppLocalizations.of(context).done),
+                                  onPressed: () {
+                                    Navigator.pop(context);
                                   },
                                 ),
-                              )
-                            ],
-                            cancelButton: CupertinoActionSheetAction(
-                              child: Text(AppLocalizations.of(context).done),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
+                              ),
+                            );
+                          },
+                          borderRadius:
+                              BorderRadius.circular(kDefaultBorderRadius),
+                          child: Container(
+                            padding: const EdgeInsets.all(kLargePadding),
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(kDefaultBorderRadius),
+                              gradient: LinearGradient(
+                                colors: [
+                                  kPrimaryColor,
+                                  kPrimaryColor.withOpacity(0.7),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(3.0),
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: kDefaultPadding),
-                        height: 110,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              colors: [kPrimaryColor, kPrimaryColor2]),
-                          border: Border.all(
-                            color: Colors.white,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.white),
-                            borderRadius: BorderRadius.circular(17),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                _formatDate,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: kPrimaryColor,
-                                    fontSize: 30),
-                              ),
-                              Text(
-                                _formatDay,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: kPrimaryColor3,
-                                    fontSize: 25),
-                              ),
-                            ],
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding:
+                                      const EdgeInsets.all(kDefaultPadding),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(
+                                        kDefaultBorderRadius),
+                                  ),
+                                  child: const Icon(
+                                    Icons.calendar_today,
+                                    color: Colors.white,
+                                    size: 32,
+                                  ),
+                                ),
+                                const SizedBox(width: kDefaultPadding),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _formatDate,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _formatDay,
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.edit_calendar,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -137,50 +167,72 @@ class _BodyState extends State<Body> {
                     ),
                     for (int i = 0; i < snapshot.data!.docs.length; i++)
                       Container(
-                        margin: EdgeInsets.only(bottom: kDefaultPadding),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AttendancePage(
-                                        date: _formatDate,
-                                        coursename: snapshot.data!.docs[i]
-                                            ['name'],
-                                        courseid: snapshot.data!.docs[i].id,
-                                      )),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(3.0),
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: kDefaultPadding),
-                            height: 110,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                  colors: [kPrimaryColor2, kPrimaryColor]),
-                              border: Border.all(
-                                color: Colors.white,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                        margin: const EdgeInsets.only(
+                            bottom: kDefaultPadding,
+                            left: kDefaultPadding,
+                            right: kDefaultPadding),
+                        child: Card(
+                          elevation: 2,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => AttendancePage(
+                                          date: _formatDate,
+                                          coursename: snapshot.data!.docs[i]
+                                              ['name'],
+                                          courseid: snapshot.data!.docs[i].id,
+                                        )),
+                              );
+                            },
+                            borderRadius:
+                                BorderRadius.circular(kDefaultBorderRadius),
                             child: Container(
+                              padding: const EdgeInsets.all(kLargePadding),
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(color: Colors.white),
-                                borderRadius: BorderRadius.circular(17),
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultBorderRadius),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    kSecondaryColor,
+                                    kSecondaryColor.withOpacity(0.7),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              child: Row(
                                 children: [
-                                  Text(
-                                    snapshot.data!.docs[i]['name'],
-                                    style: const TextStyle(
+                                  Container(
+                                    padding: const EdgeInsets.all(
+                                        kDefaultPadding),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(
+                                          kDefaultBorderRadius),
+                                    ),
+                                    child: const Icon(
+                                      Icons.class_outlined,
+                                      color: Colors.white,
+                                      size: 32,
+                                    ),
+                                  ),
+                                  const SizedBox(width: kDefaultPadding),
+                                  Expanded(
+                                    child: Text(
+                                      snapshot.data!.docs[i]['name'],
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: kPrimaryColor3,
-                                        fontSize: 30),
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    color: Colors.white,
+                                    size: 20,
                                   ),
                                 ],
                               ),
