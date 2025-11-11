@@ -1,10 +1,13 @@
+import 'dart:io';
 import 'package:attendance_tracker/constants.dart';
 import 'package:attendance_tracker/screens/my_courses/components/details.dart';
+import 'package:attendance_tracker/screens/services/pdf_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Body extends StatefulWidget {
   const Body({Key? key}) : super(key: key);
@@ -46,50 +49,72 @@ class _BodyState extends State<Body> {
                     ),
                     for (int i = 0; i < snapshot.data!.docs.length; i++)
                       Container(
-                        margin: EdgeInsets.only(bottom: kDefaultPadding),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => StudentList(
-                                      studentList: snapshot.data!.docs[i]
-                                          ['students'],
-                                      courseID: snapshot.data!.docs[i].id,
-                                      coursename: snapshot.data!.docs[i]
-                                          ['name'])),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(3.0),
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: kDefaultPadding),
-                            height: 110,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                  colors: [kPrimaryColor, kPrimaryColor2]),
-                              border: Border.all(
-                                color: Colors.white,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                        margin: const EdgeInsets.only(
+                            bottom: kDefaultPadding,
+                            left: kDefaultPadding,
+                            right: kDefaultPadding),
+                        child: Card(
+                          elevation: 2,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => StudentList(
+                                        studentList: snapshot.data!.docs[i]
+                                            ['students'],
+                                        courseID: snapshot.data!.docs[i].id,
+                                        coursename: snapshot.data!.docs[i]
+                                            ['name'])),
+                              );
+                            },
+                            borderRadius:
+                                BorderRadius.circular(kDefaultBorderRadius),
                             child: Container(
+                              padding: const EdgeInsets.all(kLargePadding),
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(color: Colors.white),
-                                borderRadius: BorderRadius.circular(17),
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultBorderRadius),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    kPrimaryColor,
+                                    kPrimaryColor.withOpacity(0.7),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              child: Row(
                                 children: [
-                                  Text(
-                                    snapshot.data!.docs[i]['name'],
-                                    style: const TextStyle(
+                                  Container(
+                                    padding: const EdgeInsets.all(
+                                        kDefaultPadding),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(
+                                          kDefaultBorderRadius),
+                                    ),
+                                    child: const Icon(
+                                      Icons.class_outlined,
+                                      color: Colors.white,
+                                      size: 32,
+                                    ),
+                                  ),
+                                  const SizedBox(width: kDefaultPadding),
+                                  Expanded(
+                                    child: Text(
+                                      snapshot.data!.docs[i]['name'],
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: kPrimaryColor3,
-                                        fontSize: 30),
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    color: Colors.white,
+                                    size: 20,
                                   ),
                                 ],
                               ),
@@ -132,140 +157,230 @@ class StudentList extends StatefulWidget {
 class _StudentListState extends State<StudentList> {
   List stat = [];
   List percList = [];
+  bool _isGeneratingPdf = false;
+
   @override
   void initState() {
     super.initState();
     studentPercentage();
   }
 
+  Future<void> _generateAndSharePdf() async {
+    setState(() {
+      _isGeneratingPdf = true;
+    });
+
+    try {
+      // Get teacher name
+      final user = FirebaseAuth.instance.currentUser;
+      final teacherDoc = await FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(user!.uid)
+          .get();
+      final teacherName = teacherDoc.data()?['name'] ?? 'Unknown Teacher';
+
+      // Generate PDF
+      final pdfFile = await PdfService.generateCourseReport(
+        courseId: widget.courseID,
+        courseName: widget.coursename,
+        teacherName: teacherName,
+      );
+
+      setState(() {
+        _isGeneratingPdf = false;
+      });
+
+      // Show share options
+      _showShareOptions(pdfFile);
+    } catch (e) {
+      setState(() {
+        _isGeneratingPdf = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error generating PDF: $e')),
+      );
+    }
+  }
+
+  void _showShareOptions(File pdfFile) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: kPrimaryColor),
+              title: const Text('Preview PDF'),
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfService.previewPdf(pdfFile);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share, color: kSecondaryColor),
+              title: const Text('Share'),
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfService.sharePdf(pdfFile);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.email, color: kTertiaryColor),
+              title: const Text('Share via Email'),
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfService.shareViaEmail(pdfFile, '');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.print, color: kPrimaryColor),
+              title: const Text('Print'),
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfService.printPdf(pdfFile);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        toolbarHeight: 120,
-        centerTitle: false,
-        automaticallyImplyLeading: false,
-        title: Row(children: [
-          Container(
-            margin: const EdgeInsets.only(left: kDefaultPadding / 1.5),
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                children: <TextSpan>[
-                  TextSpan(
-                    text: widget.coursename + '\n',
-                    style: const TextStyle(
-                        color: kPrimaryColor3,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 30.0,
-                        letterSpacing: -0.5,
-                        height: 1),
-                  ),
-                  TextSpan(
-                    text: AppLocalizations.of(context).attendanceReport,
-                    style: TextStyle(
-                      color: kPrimaryColor2,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25.0,
-                      letterSpacing: -0.5,
-                      height: 1,
-                    ),
-                  ),
-                ],
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.coursename,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-        ]),
+            Text(
+              AppLocalizations.of(context).attendanceReport,
+              style: TextStyle(
+                fontSize: 12,
+                color: kOnSurfaceColor.withOpacity(0.7),
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          Container(
-              margin: const EdgeInsets.only(left: kDefaultPadding * 1.5),
-              child: const BackButton(color: Colors.black)),
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            onPressed: _isGeneratingPdf ? null : _generateAndSharePdf,
+            tooltip: 'Export to PDF',
+          ),
         ],
       ),
       body: Container(
-        margin: const EdgeInsets.only(
-            left: kDefaultPadding / 2, top: kDefaultPadding),
-        child: Wrap(
-          children: [
-            for (int i = 0; i < widget.studentList.length; i++)
-              StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('students')
-                      .doc(widget.studentList[i])
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return GestureDetector(
-                        onTap: () {
-                          if (stat[i][3] == 0) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text(
-                                    AppLocalizations.of(context).noRecord)));
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => StudentDetails(
-                                      name: snapshot.data!['name'],
-                                      studentid: widget.studentList[i],
-                                      coursename: widget.coursename,
-                                      courseID: widget.courseID)),
-                            );
-                          }
-                        },
-                        child: Container(
-                            padding: const EdgeInsets.all(kDefaultPadding),
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: kDefaultPadding / 2,
-                                vertical: kDefaultPadding / 2),
-                            height: 100,
-                            width: (MediaQuery.of(context).size.width - 45) / 2,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(
-                                  width: 2,
-                                  color: stat[i][4] >= 75
-                                      ? Colors.green
-                                      : (stat[i][4] >= 50
-                                          ? Colors.yellow
-                                          : Colors.red)),
-                              borderRadius: BorderRadius.circular(15),
+        margin: const EdgeInsets.all(kDefaultPadding),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: kDefaultPadding,
+            mainAxisSpacing: kDefaultPadding,
+            childAspectRatio: 1.3,
+          ),
+          itemCount: widget.studentList.length,
+          itemBuilder: (context, i) {
+            return StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('students')
+                  .doc(widget.studentList[i])
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final attendancePercentage = stat.length > i ? stat[i][4] : 0.0;
+                  final color = attendancePercentage >= 75
+                      ? kPresentColor
+                      : (attendancePercentage >= 50
+                          ? kExcusedColor
+                          : kAbsentColor);
+
+                  return Card(
+                    elevation: 2,
+                    child: InkWell(
+                      onTap: () {
+                        if (stat[i][3] == 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  AppLocalizations.of(context).noRecord)));
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => StudentDetails(
+                                    name: snapshot.data!['name'],
+                                    studentid: widget.studentList[i],
+                                    coursename: widget.coursename,
+                                    courseID: widget.courseID)),
+                          );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(kDefaultBorderRadius),
+                      child: Container(
+                        padding: const EdgeInsets.all(kDefaultPadding),
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              BorderRadius.circular(kDefaultBorderRadius),
+                          border: Border.all(
+                            color: color,
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.person,
+                              color: color,
+                              size: 32,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Center(
-                                  child: Text(snapshot.data!['name'],
-                                      style: TextStyle(
-                                          color: kTextColor2.withOpacity(0.7),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 19)),
-                                ),
-                                const SizedBox(height: kDefaultPadding),
-                                Center(
-                                    child: Text(
-                                        stat[i][4].toStringAsFixed(1) + '%',
-                                        style: TextStyle(
-                                            color: stat[i][4] >= 75
-                                                ? Colors.green
-                                                : (stat[i][4] >= 50
-                                                    ? Colors.yellow[800]
-                                                    : Colors.red)))),
-                              ],
-                            )),
-                      );
-                    } else {
-                      return const Center(
-                        child: CupertinoActivityIndicator(),
-                      );
-                    }
-                  })
-          ],
+                            const SizedBox(height: kSmallPadding),
+                            Text(
+                              snapshot.data!['name'],
+                              style: TextStyle(
+                                color: kOnSurfaceColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: kSmallPadding),
+                            Text(
+                              '${attendancePercentage.toStringAsFixed(1)}%',
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                } else {
+                  return const Center(
+                    child: CupertinoActivityIndicator(),
+                  );
+                }
+              },
+            );
+          },
         ),
       ),
+      floatingActionButton: _isGeneratingPdf
+          ? const CircularProgressIndicator()
+          : null,
     );
   }
 

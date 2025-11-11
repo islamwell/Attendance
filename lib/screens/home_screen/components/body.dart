@@ -16,190 +16,143 @@ class Body extends StatefulWidget {
 class _BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
+    return Padding(
+      padding: const EdgeInsets.all(kDefaultPadding),
+      child: ListView(
         children: [
-          GestureDetector(
+          const SizedBox(height: kDefaultPadding),
+
+          // Take Attendance Card
+          _buildModernCard(
+            context: context,
+            title: AppLocalizations.of(context).takeAttendance,
+            subtitle: 'Mark student attendance for today',
+            icon: FontAwesomeIcons.userCheck,
+            color: kPrimaryColor,
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const TakeAttendance()),
               );
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding * 2,
-                  vertical: kDefaultPadding / 2),
-              margin: const EdgeInsets.fromLTRB(kDefaultPadding,
-                  kDefaultPadding * 2, kDefaultPadding, kDefaultPadding / 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15.0),
-                color: kPrimaryColor2.withOpacity(0.8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 4,
-                    blurRadius: 5,
-                    offset: const Offset(0.5, 5), // changes position of shadow
-                  ),
-                ],
-              ),
-              height: 160,
-              width: double.infinity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: FaIcon(
-                        FontAwesomeIcons.userCheck,
-                        color: Colors.white.withOpacity(0.8),
-                        size: 50,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Center(
-                      child: Text(
-                        AppLocalizations.of(context).takeAttendance,
-                        style: TextStyle(
-                          color: kBackgroundColor.withOpacity(0.8),
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
-          const SizedBox(
-            height: 20,
-          ),
-          GestureDetector(
+
+          const SizedBox(height: kDefaultPadding),
+
+          // My Courses Card
+          _buildModernCard(
+            context: context,
+            title: AppLocalizations.of(context).myCourses,
+            subtitle: 'View courses and attendance reports',
+            icon: FontAwesomeIcons.bookOpen,
+            color: kSecondaryColor,
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const MyCourses()),
               );
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding * 2,
-                  vertical: kDefaultPadding / 2),
-              margin: const EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15.0),
-                color: kPrimaryColor3.withOpacity(0.8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 4,
-                    blurRadius: 5,
-                    offset: const Offset(0.5, 5), // changes position of shadow
-                  ),
-                ],
-              ),
-              height: 160,
-              width: double.infinity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: FaIcon(
-                        FontAwesomeIcons.bookOpen,
-                        color: Colors.white.withOpacity(0.8),
-                        size: 50,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Center(
-                      child: Text(
-                        AppLocalizations.of(context).myCourses,
-                        style: TextStyle(
-                          color: kBackgroundColor.withOpacity(0.8),
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
-          const SizedBox(
-            height: 20,
-          ),
-          GestureDetector(
+
+          const SizedBox(height: kDefaultPadding),
+
+          // Administration Card
+          _buildModernCard(
+            context: context,
+            title: AppLocalizations.of(context).administration,
+            subtitle: 'Manage courses and students',
+            icon: FontAwesomeIcons.users,
+            color: kTertiaryColor,
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const Administration()),
               );
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding * 2,
-                  vertical: kDefaultPadding / 2),
-              margin: const EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15.0),
-                color: kPrimaryColor.withOpacity(0.75),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 4,
-                    blurRadius: 5,
-                    offset: const Offset(0.5, 5), // changes position of shadow
-                  ),
-                ],
-              ),
-              height: 160,
-              width: double.infinity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: FaIcon(
-                        FontAwesomeIcons.users,
-                        color: Colors.white.withOpacity(0.8),
-                        size: 50,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Center(
-                      child: Text(
-                        AppLocalizations.of(context).administration,
-                        style: TextStyle(
-                          color: kBackgroundColor.withOpacity(0.8),
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildModernCard({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(kDefaultBorderRadius),
+        child: Container(
+          padding: const EdgeInsets.all(kLargePadding),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(kDefaultBorderRadius),
+            gradient: LinearGradient(
+              colors: [
+                color,
+                color.withOpacity(0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Row(
+            children: [
+              // Icon Container
+              Container(
+                padding: const EdgeInsets.all(kDefaultPadding),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(kDefaultBorderRadius),
+                ),
+                child: FaIcon(
+                  icon,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+
+              const SizedBox(width: kDefaultPadding),
+
+              // Text Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Arrow Icon
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

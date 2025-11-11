@@ -19,61 +19,44 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        elevation: 0,
-        toolbarHeight: 120,
-        centerTitle: false,
-        title: Row(children: [
-          Container(
-              margin: const EdgeInsets.only(left: kDefaultPadding),
-              child: const RadiantGradientMask(
-                child: FaIcon(
-                  FontAwesomeIcons.school,
-                  color: Colors.white,
-                  size: 50,
-                ),
-                firstcol: kPrimaryColor3,
-                secondcol: kPrimaryColor2,
-              )),
-          Container(
-            margin: const EdgeInsets.only(left: kDefaultPadding),
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                children: <TextSpan>[
-                  TextSpan(
-                    text: AppLocalizations.of(context).mainTitle0 + '\n',
-                    style: TextStyle(
-                        color: kPrimaryColor3,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25.0,
-                        letterSpacing: -0.5,
-                        height: 1),
-                  ),
-                  TextSpan(
-                    text: AppLocalizations.of(context).mainTitle1,
-                    style: TextStyle(
-                      color: kPrimaryColor2,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25.0,
-                      letterSpacing: -0.5,
-                      height: 1,
-                    ),
-                  ),
-                ],
-              ),
+        title: Row(
+          children: [
+            FaIcon(
+              FontAwesomeIcons.graduationCap,
+              color: kPrimaryColor,
+              size: 28,
             ),
-          ),
-        ]),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context).mainTitle0,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  AppLocalizations.of(context).mainTitle1,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: kOnSurfaceColor.withOpacity(0.7),
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-              onPressed: () {
-                Dialogcu.signoutDialog(context);
-              },
-              icon: const Icon(
-                Icons.exit_to_app_rounded,
-                color: kPrimaryColor,
-                size: 25,
-              ))
+            onPressed: () {
+              Dialogcu.signoutDialog(context);
+            },
+            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Sign Out',
+          ),
         ],
       ),
       body: const Body(),

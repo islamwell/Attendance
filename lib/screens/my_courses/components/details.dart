@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:attendance_tracker/constants.dart';
+import 'package:attendance_tracker/screens/services/pdf_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,55 +27,121 @@ class StudentDetails extends StatefulWidget {
 class _StudentDetailsState extends State<StudentDetails> {
   List keyspro = [];
   List keys = [];
+  bool _isGeneratingPdf = false;
+
+  Future<void> _generateStudentPdf() async {
+    setState(() {
+      _isGeneratingPdf = true;
+    });
+
+    try {
+      final pdfFile = await PdfService.generateStudentReport(
+        studentId: widget.studentid,
+        studentName: widget.name,
+        courseId: widget.courseID,
+        courseName: widget.coursename,
+      );
+
+      setState(() {
+        _isGeneratingPdf = false;
+      });
+
+      _showShareOptions(pdfFile);
+    } catch (e) {
+      setState(() {
+        _isGeneratingPdf = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error generating PDF: $e')),
+      );
+    }
+  }
+
+  void _showShareOptions(File pdfFile) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: kPrimaryColor),
+              title: const Text('Preview PDF'),
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfService.previewPdf(pdfFile);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share, color: kSecondaryColor),
+              title: const Text('Share'),
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfService.sharePdf(pdfFile);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.email, color: kTertiaryColor),
+              title: const Text('Share via Email'),
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfService.shareViaEmail(pdfFile, '');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.print, color: kPrimaryColor),
+              title: const Text('Print'),
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfService.printPdf(pdfFile);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        toolbarHeight: 120,
-        centerTitle: false,
-        automaticallyImplyLeading: false,
-        title: Row(children: [
-          Container(
-            margin: const EdgeInsets.only(left: kDefaultPadding / 1.5),
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                children: <TextSpan>[
-                  TextSpan(
-                    text: widget.name + '\n',
-                    style: const TextStyle(
-                        color: kPrimaryColor3,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 30.0,
-                        letterSpacing: -0.5,
-                        height: 1),
-                  ),
-                  TextSpan(
-                    text: widget.coursename,
-                    style: const TextStyle(
-                      color: kPrimaryColor2,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25.0,
-                      letterSpacing: -0.5,
-                      height: 1,
-                    ),
-                  ),
-                ],
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.name,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-        ]),
+            Text(
+              widget.coursename,
+              style: TextStyle(
+                fontSize: 12,
+                color: kOnSurfaceColor.withOpacity(0.7),
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          Container(
-              margin: const EdgeInsets.only(left: kDefaultPadding * 1.5),
-              child: const BackButton(color: Colors.black)),
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            onPressed: _isGeneratingPdf ? null : _generateStudentPdf,
+            tooltip: 'Export Student Report',
+          ),
         ],
       ),
       body: SingleChildScrollView(
         child: buildOne(context),
       ),
+      floatingActionButton: _isGeneratingPdf
+          ? const FloatingActionButton(
+              onPressed: null,
+              child: CircularProgressIndicator(color: Colors.white),
+            )
+          : null,
     );
   }
 
@@ -91,106 +159,85 @@ class _StudentDetailsState extends State<StudentDetails> {
                   horizontal: kDefaultPadding * 1.5, vertical: kDefaultPadding),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).address + ": ",
-                        style: TextStyle(
-                            color: kTextColor2,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15),
+                  // Student Info Card
+                  Card(
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(kDefaultPadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildInfoRow(
+                            AppLocalizations.of(context).address,
+                            snapshot.data!['address'],
+                            Icons.location_on,
+                          ),
+                          const Divider(),
+                          _buildInfoRow(
+                            AppLocalizations.of(context).father,
+                            snapshot.data!['fathername'],
+                            Icons.person,
+                          ),
+                          const Divider(),
+                          _buildInfoRow(
+                            AppLocalizations.of(context).mother,
+                            snapshot.data!['mothername'],
+                            Icons.person,
+                          ),
+                          const Divider(),
+                          _buildInfoRow(
+                            AppLocalizations.of(context).phone,
+                            snapshot.data!['phonenumber'],
+                            Icons.phone,
+                          ),
+                        ],
                       ),
-                      Text(snapshot.data!['address'],
-                          style:
-                              const TextStyle(color: kTextColor2, fontSize: 15))
-                    ],
+                    ),
                   ),
-                  const SizedBox(
-                    height: kDefaultPadding / 2,
+                  const SizedBox(height: kLargePadding),
+
+                  // Attendance Records Title
+                  const Text(
+                    'Attendance Records',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).father + ": ",
-                        style: TextStyle(
-                            color: kTextColor2,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15),
-                      ),
-                      Text(snapshot.data!['fathername'],
-                          style:
-                              const TextStyle(color: kTextColor2, fontSize: 15))
-                    ],
-                  ),
-                  const SizedBox(
-                    height: kDefaultPadding / 2,
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).mother + ": ",
-                        style: TextStyle(
-                            color: kTextColor2,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15),
-                      ),
-                      Text(snapshot.data!['mothername'],
-                          style:
-                              const TextStyle(color: kTextColor2, fontSize: 15))
-                    ],
-                  ),
-                  const SizedBox(
-                    height: kDefaultPadding / 2,
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).phone + ": ",
-                        style: TextStyle(
-                            color: kTextColor2,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15),
-                      ),
-                      Text(snapshot.data!['phonenumber'],
-                          style:
-                              const TextStyle(color: kTextColor2, fontSize: 15))
-                    ],
-                  ),
-                  const SizedBox(height: 50),
-                  Row(
-                    children: [
-                      Expanded(
-                          child: Container(
-                        height: 60,
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1.1, color: kTextColor2)),
-                        child: Center(
+                  const SizedBox(height: kDefaultPadding),
+
+                  // Table Header
+                  Container(
+                    decoration: BoxDecoration(
+                      color: kPrimaryContainer,
+                      borderRadius: BorderRadius.circular(kDefaultBorderRadius),
+                    ),
+                    padding: const EdgeInsets.all(kDefaultPadding),
+                    child: Row(
+                      children: [
+                        Expanded(
                           child: Text(
                             AppLocalizations.of(context).dato,
-                            style: TextStyle(
-                                color: kTextColor2,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                      )),
-                      const SizedBox(width: 5),
-                      Expanded(
-                          child: Container(
-                        height: 60,
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1.1, color: kTextColor2)),
-                        child: const Center(
-                          child: Text(
+                        const SizedBox(width: kDefaultPadding),
+                        Expanded(
+                          child: const Text(
                             'Status',
                             style: TextStyle(
-                                color: kTextColor2,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                      )),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 5),
                   keys.isEmpty
@@ -223,43 +270,105 @@ class _StudentDetailsState extends State<StudentDetails> {
     return Column(
       children: [
         for (int y = 0; y < keys.length; y++)
-          Column(
-            children: [
-              Row(
+          Card(
+            margin: const EdgeInsets.only(bottom: kSmallPadding),
+            elevation: 1,
+            child: Padding(
+              padding: const EdgeInsets.all(kDefaultPadding),
+              child: Row(
                 children: [
                   Expanded(
-                      child: Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                        border: Border.all(width: 1.1, color: kTextColor2)),
-                    child: Center(
-                      child: Text(
-                        keys[y],
-                        style:
-                            const TextStyle(color: kTextColor2, fontSize: 20),
+                    child: Text(
+                      keys[y],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                  )),
-                  const SizedBox(width: 5),
+                  ),
+                  const SizedBox(width: kDefaultPadding),
                   Expanded(
-                      child: Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                        border: Border.all(width: 1.1, color: kTextColor2)),
-                    child: Center(
-                      child: Text(
-                        snapshot[widget.courseID][keys[y]],
-                        style:
-                            const TextStyle(color: kTextColor2, fontSize: 20),
-                      ),
-                    ),
-                  )),
+                    child: _buildStatusChip(snapshot[widget.courseID][keys[y]]),
+                  ),
                 ],
               ),
-              const SizedBox(height: 5),
-            ],
+            ),
           ),
       ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: kPrimaryColor),
+        const SizedBox(width: kSmallPadding),
+        Text(
+          '$label: ',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 15),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusChip(String status) {
+    Color color;
+    IconData icon;
+
+    switch (status) {
+      case 'Present':
+        color = kPresentColor;
+        icon = Icons.check_circle;
+        break;
+      case 'Absent':
+        color = kAbsentColor;
+        icon = Icons.cancel;
+        break;
+      case 'Excused':
+        color = kExcusedColor;
+        icon = Icons.info;
+        break;
+      default:
+        color = kOutlineColor;
+        icon = Icons.help;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: kSmallPadding,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 4),
+          Text(
+            status,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
