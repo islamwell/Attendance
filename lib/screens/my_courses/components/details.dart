@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:attendance_tracker/constants.dart';
 import 'package:attendance_tracker/screens/services/pdf_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -57,7 +57,7 @@ class _StudentDetailsState extends State<StudentDetails> {
     }
   }
 
-  void _showShareOptions(File pdfFile) {
+  void _showShareOptions(Uint8List pdfBytes) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -68,7 +68,7 @@ class _StudentDetailsState extends State<StudentDetails> {
               title: const Text('Preview PDF'),
               onTap: () async {
                 Navigator.pop(context);
-                await PdfService.previewPdf(pdfFile);
+                await PdfService.previewPdf(pdfBytes);
               },
             ),
             ListTile(
@@ -76,7 +76,7 @@ class _StudentDetailsState extends State<StudentDetails> {
               title: const Text('Share'),
               onTap: () async {
                 Navigator.pop(context);
-                await PdfService.sharePdf(pdfFile);
+                await PdfService.sharePdf(pdfBytes);
               },
             ),
             ListTile(
@@ -84,7 +84,7 @@ class _StudentDetailsState extends State<StudentDetails> {
               title: const Text('Share via Email'),
               onTap: () async {
                 Navigator.pop(context);
-                await PdfService.shareViaEmail(pdfFile, '');
+                await PdfService.shareViaEmail(pdfBytes, '');
               },
             ),
             ListTile(
@@ -92,7 +92,7 @@ class _StudentDetailsState extends State<StudentDetails> {
               title: const Text('Print'),
               onTap: () async {
                 Navigator.pop(context);
-                await PdfService.printPdf(pdfFile);
+                await PdfService.printPdf(pdfBytes);
               },
             ),
           ],

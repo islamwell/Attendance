@@ -1,18 +1,21 @@
-import 'dart:io';
+// Platform-agnostic imports
+import 'dart:io' if (dart.library.html) 'dart:html' as platform;
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+// Remove these web-incompatible imports
+// import 'package:path_provider/path_provider.dart';
+// import 'package:share_plus/share_plus.dart';
 
 class PdfService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Generate a PDF report for a specific course
-  static Future<File> generateCourseReport({
+  /// Returns Uint8List (bytes) which works on both web and mobile
+  static Future<Uint8List> generateCourseReport({
     required String courseId,
     required String courseName,
     required String teacherName,
@@ -106,17 +109,13 @@ class PdfService {
       ),
     );
 
-    // Save PDF to file
-    final output = await getTemporaryDirectory();
-    final fileName = 'attendance_report_${courseName.replaceAll(' ', '_')}_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf';
-    final file = File('${output.path}/$fileName');
-    await file.writeAsBytes(await pdf.save());
-
-    return file;
+    // Return PDF bytes (works on both web and mobile)
+    return await pdf.save();
   }
 
   /// Generate a PDF report for a specific student
-  static Future<File> generateStudentReport({
+  /// Returns Uint8List (bytes) which works on both web and mobile
+  static Future<Uint8List> generateStudentReport({
     required String studentId,
     required String studentName,
     required String courseId,
@@ -200,13 +199,8 @@ class PdfService {
       ),
     );
 
-    // Save PDF to file
-    final output = await getTemporaryDirectory();
-    final fileName = 'student_report_${studentName.replaceAll(' ', '_')}_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf';
-    final file = File('${output.path}/$fileName');
-    await file.writeAsBytes(await pdf.save());
-
-    return file;
+    // Return PDF bytes (works on both web and mobile)
+    return await pdf.save();
   }
 
   // PDF Building Components
@@ -585,56 +579,35 @@ class PdfService {
     );
   }
 
-  // Sharing Methods
+  // Sharing Methods (Web and Mobile compatible)
 
-  /// Share PDF via email
-  static Future<void> shareViaEmail(File pdfFile, String recipientEmail) async {
-    final xFile = XFile(pdfFile.path);
-    await Share.shareXFiles(
-      [xFile],
-      subject: 'Attendance Report - ${DateFormat('MMM dd, yyyy').format(DateTime.now())}',
-      text: 'Please find attached the attendance report.',
-    );
-  }
-
-  /// Share PDF via WhatsApp
-  static Future<void> shareViaWhatsApp(File pdfFile, String phoneNumber) async {
-    // WhatsApp sharing via share_plus (will show share sheet with WhatsApp option)
-    final xFile = XFile(pdfFile.path);
-    await Share.shareXFiles([xFile]);
-
-    // Alternative: Direct WhatsApp link (requires url_launcher)
-    // Note: This opens WhatsApp but doesn't attach the file automatically
-    // final whatsappUrl = 'https://wa.me/$phoneNumber';
-    // if (await canLaunchUrl(Uri.parse(whatsappUrl))) {
-    //   await launchUrl(Uri.parse(whatsappUrl));
-    // }
-  }
-
-  /// Generic share (shows system share sheet)
-  static Future<void> sharePdf(File pdfFile) async {
-    final xFile = XFile(pdfFile.path);
-    await Share.shareXFiles(
-      [xFile],
-      subject: 'Attendance Report',
-      text: 'Please find attached the attendance report.',
-    );
-  }
-
-  /// Print PDF
-  static Future<void> printPdf(File pdfFile) async {
-    final bytes = await pdfFile.readAsBytes();
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => bytes,
-    );
-  }
-
-  /// Preview PDF before sharing
-  static Future<void> previewPdf(File pdfFile) async {
-    final bytes = await pdfFile.readAsBytes();
+  /// Share PDF via email (opens system share dialog)
+  static Future<void> shareViaEmail(Uint8List pdfBytes, String recipientEmail) async {
     await Printing.sharePdf(
-      bytes: bytes,
-      filename: pdfFile.path.split('/').last,
+      bytes: pdfBytes,
+      filename: 'attendance_report_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf',
+    );
+  }
+
+  /// Generic share (shows system share sheet on mobile, download on web)
+  static Future<void> sharePdf(Uint8List pdfBytes) async {
+    await Printing.sharePdf(
+      bytes: pdfBytes,
+      filename: 'attendance_report_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf',
+    );
+  }
+
+  /// Print PDF (works on both web and mobile)
+  static Future<void> printPdf(Uint8List pdfBytes) async {
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdfBytes,
+    );
+  }
+
+  /// Preview PDF before sharing (opens print preview)
+  static Future<void> previewPdf(Uint8List pdfBytes) async {
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdfBytes,
     );
   }
 }
