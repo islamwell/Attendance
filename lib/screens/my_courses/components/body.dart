@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:attendance_tracker/constants.dart';
 import 'package:attendance_tracker/screens/my_courses/components/details.dart';
 import 'package:attendance_tracker/screens/services/pdf_service.dart';
@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class Body extends StatefulWidget {
   const Body({Key? key}) : super(key: key);
@@ -202,7 +201,7 @@ class _StudentListState extends State<StudentList> {
     }
   }
 
-  void _showShareOptions(File pdfFile) {
+  void _showShareOptions(Uint8List pdfBytes) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -213,7 +212,7 @@ class _StudentListState extends State<StudentList> {
               title: const Text('Preview PDF'),
               onTap: () async {
                 Navigator.pop(context);
-                await PdfService.previewPdf(pdfFile);
+                await PdfService.previewPdf(pdfBytes);
               },
             ),
             ListTile(
@@ -221,7 +220,7 @@ class _StudentListState extends State<StudentList> {
               title: const Text('Share'),
               onTap: () async {
                 Navigator.pop(context);
-                await PdfService.sharePdf(pdfFile);
+                await PdfService.sharePdf(pdfBytes);
               },
             ),
             ListTile(
@@ -229,7 +228,7 @@ class _StudentListState extends State<StudentList> {
               title: const Text('Share via Email'),
               onTap: () async {
                 Navigator.pop(context);
-                await PdfService.shareViaEmail(pdfFile, '');
+                await PdfService.shareViaEmail(pdfBytes, '');
               },
             ),
             ListTile(
@@ -237,7 +236,7 @@ class _StudentListState extends State<StudentList> {
               title: const Text('Print'),
               onTap: () async {
                 Navigator.pop(context);
-                await PdfService.printPdf(pdfFile);
+                await PdfService.printPdf(pdfBytes);
               },
             ),
           ],
